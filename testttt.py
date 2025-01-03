@@ -1,1 +1,1 @@
-print("take a break")
+print("holiday")
