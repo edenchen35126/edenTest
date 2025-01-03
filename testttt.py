@@ -1,1 +1,1 @@
-print("hello0000000000000")
+print("take a break")
