@@ -1,1 +1,1 @@
-print("holiday")
+print("It's Monday...")
