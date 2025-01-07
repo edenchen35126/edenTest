@@ -1,0 +1,9 @@
+path: D:\AI\Demo_eden\edenTest\datasets
+train: train/images ###
+val: val/images ###
+test: test/images ###
+
+nc: 2
+names:
+  0: "no gloves"
+  1: "without goggles"
