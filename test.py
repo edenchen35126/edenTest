@@ -3,91 +3,126 @@ import torch
 import cv2
 import os
 import time
+import threading
 
 
+# 設定設備
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-print(device)
-model = YOLO('trained_model/best_10_modify.pt').to(device)  ###
+print(f"Using device: {device}")
+
+# 載入模型
+model_fire = YOLO('model_fire/model_collections_fire/weights/best.pt').to(device)
+
+
+# testPath = "datasets/test_cellphone/images/"
+
+# testFilePath = os.listdir(testPath)
+# test_record = []
+
+# for file in testFilePath:
+#     test_record.append(file)
+# #print(train_record)
+
+# test_final = []
+# for i in range(len(test_record)):
+#     imagepath = "datasets/test_cellphone/images/"+test_record[i]+""
+#     #img = cv2.imread("D:/AI/QTR_eden/QTR/dataset/train/"++)
+
+#     img = cv2.imread(imagepath)
+
+#     #print(img.shape)
+#     # cv2.imshow("window_name", img)
+
+#     # cv2.waitKey(0)
+
+#     # # closing all open windows
+#     # cv2.destroyAllWindows()
+
+
+#     result = model(source=img,
+#                   show=True, conf=0.5) 
+#     cv2.waitKey(0)
 
 
 
-cap = cv2.VideoCapture("videos/沒戴護目鏡.mp4")
 
-if not cap.isOpened():
-    print("Cannot open camera")
-    exit()
+# cap = cv2.VideoCapture("videos/沒戴護目鏡.mp4")
+
+# if not cap.isOpened():
+#     print("Cannot open camera")
+#     exit()
     
-count = 0
-count_predictions = 0
-batch_size = 10  # 批次大小
-batch_frames = []  # 暫存多幀影像
+# count = 0
+# count_predictions = 0
+# batch_size = 10  # 批次大小
+# batch_frames = []  # 暫存多幀影像
 
-##for 一次一張圖
-#fps = 1 #跳過偵數  
-##
+# ##for 一次一張圖
+# #fps = 1 #跳過偵數  
+# ##
 
-### 一次一個frame
-## 有分pop(較慢) 優點:ori & predictions images都會完整保存 / 清空frame再append(快) 缺點:最後幾個frame不會存到
-while True:
-    ##for 一次一張圖
-    #frame_index = int(count * fps)
-    #cap.set(cv2.CAP_PROP_POS_FRAMES, frame_index)  # 設定讀取位置
-    ##
+# ### 一次一個frame
+# ## 有分pop(較慢) 優點:ori & predictions images都會完整保存 / 清空frame再append(快) 缺點:最後幾個frame不會存到
+# while True:
+#     ##for 一次一張圖
+#     #frame_index = int(count * fps)
+#     #cap.set(cv2.CAP_PROP_POS_FRAMES, frame_index)  # 設定讀取位置
+#     ##
     
-  ret, frame = cap.read()             # 讀取影片的每一幀
-  if not ret:
-    print("Cannot receive frame")   # 如果讀取錯誤，印出訊息
-    break
-  count = count + 1
+#   ret, frame = cap.read()             # 讀取影片的每一幀
+#   if not ret:
+#     print("Cannot receive frame")   # 如果讀取錯誤，印出訊息
+#     break
+#   count = count + 1
     
-  batch_frames.append(frame)
+#   batch_frames.append(frame)
     
-  ori_image_path = os.path.join("save_dir/ori_image/", f"{count:04d}.jpg")
-  cv2.imwrite(ori_image_path, frame)
+#   ori_image_path = os.path.join("save_dir/ori_image/", f"{count:04d}.jpg")
+#   cv2.imwrite(ori_image_path, frame)
 
-  if len(batch_frames) == batch_size:
+#   if len(batch_frames) == batch_size:
 
-    results = model.predict(source = batch_frames,show=False, conf=0.5,max_det=2,
-                        verbose=False)
+#     results = model.predict(source = batch_frames,show=False, conf=0.5,max_det=2,
+#                         verbose=False)
 
       
-    # processed_frame = results[0].plot()  # 提取可視化結果(單偵圖片結果)
-    # processed_image_path = os.path.join("save_dir/predictions/", f"processed_{count:04d}.jpg")
-    # cv2.imwrite(processed_image_path, processed_frame)
+#     # processed_frame = results[0].plot()  # 提取可視化結果(單偵圖片結果)
+#     # processed_image_path = os.path.join("save_dir/predictions/", f"processed_{count:04d}.jpg")
+#     # cv2.imwrite(processed_image_path, processed_frame)
     
     
-    ############################ batch_frame的結構，但是在write predictions的時候一樣一張一張圖片寫
-    # processed_frame = results[-1].plot()
-    # count_predictions = count_predictions + 1
-    # cv2.imshow("0000000000000", processed_frame)
+#     ############################ batch_frame的結構，但是在write predictions的時候一樣一張一張圖片寫
+#     # processed_frame = results[-1].plot()
+#     # count_predictions = count_predictions + 1
+#     # cv2.imshow("0000000000000", processed_frame)
       
-    # processed_image_path = os.path.join("save_dir/predictions/", f"processed_{count:04d}.jpg")
-    # cv2.imwrite(processed_image_path, processed_frame)
+#     # processed_image_path = os.path.join("save_dir/predictions/", f"processed_{count:04d}.jpg")
+#     # cv2.imwrite(processed_image_path, processed_frame)
       
-    # if cv2.waitKey(1) & 0xFF == ord('q'):
-    #             cap.release()
-    #             cv2.destroyAllWindows()
-    #             exit()
-    ############################
+#     # if cv2.waitKey(1) & 0xFF == ord('q'):
+#     #             cap.release()
+#     #             cv2.destroyAllWindows()
+#     #             exit()
+#     ############################
     
     
-    #frame批次處理/偵測
-    for result in results:
-      processed_frame = result.plot()  # 提取可視化結果
-      count_predictions = count_predictions + 1
-      cv2.imshow("0000000000000", processed_frame)
-      processed_image_path = os.path.join("save_dir/predictions/", f"processed_{count_predictions:04d}.jpg")
-      cv2.imwrite(processed_image_path, processed_frame)
+#     #frame批次處理/偵測
+#     for result in results:
+#       processed_frame = result.plot()  # 提取可視化結果
+#       count_predictions = count_predictions + 1
+#       cv2.imshow("0000000000000", processed_frame)
+#       processed_image_path = os.path.join("save_dir/predictions/", f"processed_{count_predictions:04d}.jpg")
+#       cv2.imwrite(processed_image_path, processed_frame)
             
-      # 等待 1 毫秒，模擬影片播放效果，按下 `q` 可退出
-      if cv2.waitKey(1) & 0xFF == ord('q'):
-        cap.release()
-        cv2.destroyAllWindows()
-        exit()
+#       # 等待 1 毫秒，模擬影片播放效果，按下 `q` 可退出
+#       if cv2.waitKey(1) & 0xFF == ord('q'):
+#         cap.release()
+#         cv2.destroyAllWindows()
+#         exit()
     
-    batch_frames = []
+#     batch_frames = []
     
-cap.release()
+# cap.release()
 
                
 """
@@ -148,7 +183,14 @@ cap.release()
 # result = model(source=f"videos/沒戴手套擦拭.mp4",
 #                show=True, conf=0.5, save=True, save_frames=True, project="save_dir", name="result_ten")  
 
-"""
-result = model(source=f"videos/有戴護目鏡.mp4",
-               show=True, conf=0.5)  """
+
+# result = model_fire(source=f"datasets/test_fire/processed_video_0.mp4",
+#                show=True, conf=0.75)  
+
+##寫變數到文字檔
+# count = 0
+# with open("test.txt", 'w') as f:
+#     f.write("count :"+str(count))
+
+
 
